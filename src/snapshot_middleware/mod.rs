@@ -16,6 +16,7 @@ mod rbxm;
 mod rbxmx;
 mod txt;
 mod util;
+mod ix;
 
 use std::path::Path;
 
@@ -33,6 +34,7 @@ use self::{
     rbxm::snapshot_rbxm,
     rbxmx::snapshot_rbxmx,
     txt::snapshot_txt,
+    ix::snapshot_ix,
     util::PathExt,
 };
 
@@ -98,6 +100,8 @@ pub fn snapshot_from_vfs(
             return snapshot_rbxmx(context, vfs, path);
         } else if path.file_name_ends_with(".rbxm") {
             return snapshot_rbxm(context, vfs, path);
+        } else if path.file_name_ends_with(".ix") {
+            return snapshot_ix(context, vfs, path)
         }
 
         Ok(None)
