@@ -12,6 +12,8 @@
 
 <hr />
 
+This is a fork of Rojo that can sync in `.ix` files, for using insitux inside Roblox.
+
 **Rojo** is a tool designed to enable Roblox developers to use professional-grade software engineering tools.
 
 With Rojo, it's possible to use industry-leading tools like **Visual Studio Code** and **Git**.
