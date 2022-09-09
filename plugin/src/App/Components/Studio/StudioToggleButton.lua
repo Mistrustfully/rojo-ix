@@ -1,7 +1,8 @@
 local Rojo = script:FindFirstAncestor("Rojo")
 local Plugin = Rojo.Plugin
+local Packages = Rojo.Packages
 
-local Roact = require(Rojo.Roact)
+local Roact = require(Packages.Roact)
 
 local Dictionary = require(Plugin.Dictionary)
 
@@ -42,6 +43,10 @@ end
 function StudioToggleButton:didUpdate(lastProps)
 	if self.props.enabled ~= lastProps.enabled then
 		self.button.Enabled = self.props.enabled
+	end
+
+	if self.props.icon ~= lastProps.icon then
+		self.button.Icon = self.props.icon
 	end
 
 	if self.props.active ~= lastProps.active then

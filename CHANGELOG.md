@@ -1,6 +1,64 @@
 # Rojo Changelog
 
 ## Unreleased Changes
+* Added `--watch` flag to `rojo sourcemap` ([#602])
+
+[#602]: https://github.com/rojo-rbx/rojo/pull/602
+
+## [7.2.1] - July 8, 2022
+* Fixed notification sound by changing it to a generic sound. ([#566])
+* Added setting to turn off sound effects. ([#568])
+
+[#566]: https://github.com/rojo-rbx/rojo/pull/566
+[#568]: https://github.com/rojo-rbx/rojo/pull/568
+[7.2.1]: https://github.com/rojo-rbx/rojo/releases/tag/v7.2.1
+
+## [7.2.0] - June 29, 2022
+* Added support for `.luau` files. ([#552])
+* Added support for live syncing Attributes and Tags. ([#553])
+* Added notification popups in the Roblox Studio plugin. ([#540])
+* Fixed `init.meta.json` when used with `init.lua` and related files. ([#549])
+* Fixed incorrect output when serving from a non-default address or port ([#556])
+* Fixed Linux binaries not running on systems with older glibc. ([#561])
+* Added `camelCase` casing for JSON models, deprecating `PascalCase` names. ([#563])
+* Switched from structopt to clap for command line argument parsing.
+* Significantly improved performance of building and serving. ([#548])
+* Increased minimum supported Rust version to 1.57.0. ([#564])
+
+[#540]: https://github.com/rojo-rbx/rojo/pull/540
+[#548]: https://github.com/rojo-rbx/rojo/pull/548
+[#549]: https://github.com/rojo-rbx/rojo/pull/549
+[#552]: https://github.com/rojo-rbx/rojo/pull/552
+[#553]: https://github.com/rojo-rbx/rojo/pull/553
+[#556]: https://github.com/rojo-rbx/rojo/pull/556
+[#561]: https://github.com/rojo-rbx/rojo/pull/561
+[#563]: https://github.com/rojo-rbx/rojo/pull/563
+[#564]: https://github.com/rojo-rbx/rojo/pull/564
+[7.2.0]: https://github.com/rojo-rbx/rojo/releases/tag/v7.2.0
+
+## [7.1.1] - May 26, 2022
+* Fixed sourcemap command not stripping paths correctly ([#544])
+* Fixed Studio plugin settings not saving correctly.
+
+[#544]: https://github.com/rojo-rbx/rojo/pull/544
+[#545]: https://github.com/rojo-rbx/rojo/pull/545
+[7.1.1]: https://github.com/rojo-rbx/rojo/releases/tag/v7.1.1
+
+## [7.1.0] - May 22, 2022
+* Added support for specifying an address to be used by default in project files. ([#507])
+* Added support for optional paths in project files. ([#472])
+* Added support for the new Open Cloud API when uploading. ([#504])
+* Added `sourcemap` command for generating sourcemaps to feed into other tools. ([#530])
+* Added PluginActions for connecting/disconnecting a session ([#537])
+* Added changing toolbar icon to indicate state ([#538])
+
+[#472]: https://github.com/rojo-rbx/rojo/pull/472
+[#504]: https://github.com/rojo-rbx/rojo/pull/504
+[#507]: https://github.com/rojo-rbx/rojo/pull/507
+[#530]: https://github.com/rojo-rbx/rojo/pull/530
+[#537]: https://github.com/rojo-rbx/rojo/pull/537
+[#538]: https://github.com/rojo-rbx/rojo/pull/538
+[7.1.0]: https://github.com/rojo-rbx/rojo/releases/tag/v7.1.0
 
 ## [7.0.0] - December 10, 2021
 * Fixed Rojo's interactions with properties enabled by FFlags that are not yet enabled. ([#493])
@@ -87,7 +145,7 @@ The shorthand property format that most users use is not impacted. For reference
 ## [7.0.0-alpha.4][7.0.0-alpha.4] (May 5, 2021)
 * Added the `gameId` and `placeId` optional properties to project files.
     * When connecting from the Rojo Roblox Studio plugin, Rojo will set the game and place ID of the current place to these values, if set.
-    * This is equivalent to running `game:SetUniverseId(...)` and `game:SetPlaceId(...)` from the command bar in Studio. 
+    * This is equivalent to running `game:SetUniverseId(...)` and `game:SetPlaceId(...)` from the command bar in Studio.
 * Added "EXPERIMENTAL!" label to two-way sync toggle in Rojo's Roblox Studio plugin.
 * Fixed `Name` and `Parent` properties being allowed in Rojo projects. ([#413][pr-413])
 * Fixed "Open Scripts Externally" feature crashing Studio. ([#369][issue-369])

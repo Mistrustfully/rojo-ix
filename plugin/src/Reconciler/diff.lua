@@ -3,7 +3,9 @@
 	patch that can be later applied.
 ]]
 
-local Log = require(script.Parent.Parent.Parent.Log)
+local Packages = script.Parent.Parent.Parent.Packages
+local Log = require(Packages.Log)
+
 local invariant = require(script.Parent.Parent.invariant)
 local getProperty = require(script.Parent.getProperty)
 local Error = require(script.Parent.Error)
@@ -113,6 +115,16 @@ local function diff(instanceMap, virtualInstances, rootId)
 			local childId = instanceMap.fromInstances[childInstance]
 
 			if childId == nil then
+				-- pcall to avoid security permission errors
+				local success, skip = pcall(function()
+					-- We don't remove instances that aren't going to be saved anyway,
+					-- such as the Rojo session lock value.
+					return childInstance.Archivable == false
+				end)
+				if success and skip then
+					continue
+				end
+
 				-- This is an existing instance not present in the virtual DOM.
 				-- We can mark it for deletion unless the user has asked us not
 				-- to delete unknown stuff.

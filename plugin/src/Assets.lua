@@ -18,13 +18,19 @@ local Assets = {
 	Images = {
 		Logo = "rbxassetid://5990772764",
 		PluginButton = "rbxassetid://3405341609",
+		PluginButtonConnected = "rbxassetid://9529783993",
+		PluginButtonWarning = "rbxassetid://9529784530",
 		Icons = {
 			Close = "rbxassetid://6012985953",
 			Back = "rbxassetid://6017213752",
+			Reset = "rbxassetid://10142422327",
 		},
 		Checkbox = {
 			Active = "rbxassetid://6016251644",
 			Inactive = "rbxassetid://6016251963",
+		},
+		Dropdown = {
+			Arrow = "rbxassetid://10131770538",
 		},
 		Spinner = {
 			Foreground = "rbxassetid://3222731032",
@@ -42,6 +48,9 @@ local Assets = {
 			[128] = "rbxassetid://2600845734",
 			[500] = "rbxassetid://2609138523"
 		},
+	},
+	Sounds = {
+		Notification = "rbxassetid://203785492",
 	},
 	StartSession = "",
 	SessionActive = "",

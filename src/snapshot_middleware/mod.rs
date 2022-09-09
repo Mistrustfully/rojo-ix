@@ -25,7 +25,7 @@ use memofs::{IoResultExt, Vfs};
 use crate::snapshot::{InstanceContext, InstanceSnapshot};
 
 use self::{
-    csv::snapshot_csv,
+    csv::{snapshot_csv, snapshot_csv_init},
     dir::snapshot_dir,
     json::snapshot_json,
     json_model::snapshot_json_model,
@@ -42,6 +42,7 @@ pub use self::project::snapshot_project_node;
 
 /// The main entrypoint to the snapshot function. This function can be pointed
 /// at any path and will return something if Rojo knows how to deal with it.
+#[profiling::function]
 pub fn snapshot_from_vfs(
     context: &InstanceContext,
     vfs: &Vfs,
@@ -58,7 +59,17 @@ pub fn snapshot_from_vfs(
             return snapshot_project(context, vfs, &project_path);
         }
 
+        let init_path = path.join("init.luau");
+        if vfs.metadata(&init_path).with_not_found()?.is_some() {
+            return snapshot_lua_init(context, vfs, &init_path);
+        }
+
         let init_path = path.join("init.lua");
+        if vfs.metadata(&init_path).with_not_found()?.is_some() {
+            return snapshot_lua_init(context, vfs, &init_path);
+        }
+
+        let init_path = path.join("init.server.luau");
         if vfs.metadata(&init_path).with_not_found()?.is_some() {
             return snapshot_lua_init(context, vfs, &init_path);
         }
@@ -68,14 +79,30 @@ pub fn snapshot_from_vfs(
             return snapshot_lua_init(context, vfs, &init_path);
         }
 
+        let init_path = path.join("init.client.luau");
+        if vfs.metadata(&init_path).with_not_found()?.is_some() {
+            return snapshot_lua_init(context, vfs, &init_path);
+        }
+
         let init_path = path.join("init.client.lua");
         if vfs.metadata(&init_path).with_not_found()?.is_some() {
             return snapshot_lua_init(context, vfs, &init_path);
         }
 
+        let init_path = path.join("init.csv");
+        if vfs.metadata(&init_path).with_not_found()?.is_some() {
+            return snapshot_csv_init(context, vfs, &init_path);
+        }
+
         snapshot_dir(context, vfs, path)
     } else {
-        if let Ok(name) = path.file_name_trim_end(".lua") {
+        let script_name = path
+            .file_name_trim_end(".lua")
+            .or_else(|_| path.file_name_trim_end(".luau"));
+
+        let csv_name = path.file_name_trim_end(".csv");
+
+        if let Ok(name) = script_name {
             match name {
                 // init scripts are handled elsewhere and should not turn into
                 // their own children.
@@ -92,8 +119,14 @@ pub fn snapshot_from_vfs(
             return Ok(None);
         } else if path.file_name_ends_with(".json") {
             return snapshot_json(context, vfs, path);
-        } else if path.file_name_ends_with(".csv") {
-            return snapshot_csv(context, vfs, path);
+        } else if let Ok(name) = csv_name {
+            match name {
+                // init csv are handled elsewhere and should not turn into
+                // their own children.
+                "init" => return Ok(None),
+
+                _ => return snapshot_csv(context, vfs, path),
+            }
         } else if path.file_name_ends_with(".txt") {
             return snapshot_txt(context, vfs, path);
         } else if path.file_name_ends_with(".rbxmx") {

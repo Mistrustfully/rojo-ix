@@ -16,9 +16,10 @@ local function getStudio()
 end
 
 local Rojo = script:FindFirstAncestor("Rojo")
+local Packages = Rojo.Packages
 
-local Roact = require(Rojo.Roact)
-local Log = require(Rojo.Log)
+local Roact = require(Packages.Roact)
+local Log = require(Packages.Log)
 
 local strict = require(script.Parent.Parent.strict)
 
@@ -71,6 +72,17 @@ local lightTheme = strict("LightTheme", {
 			BorderColor = hexColor(0xAFAFAF),
 		},
 	},
+	Dropdown = {
+		TextColor = hexColor(0x00000),
+		BorderColor = hexColor(0xAFAFAF),
+		BackgroundColor = hexColor(0xEEEEEE),
+		Open = {
+			IconColor = BRAND_COLOR,
+		},
+		Closed = {
+			IconColor = hexColor(0xEEEEEE),
+		},
+	},
 	AddressEntry = {
 		TextColor = hexColor(0x000000),
 		PlaceholderColor = hexColor(0x8C8C8C)
@@ -102,6 +114,10 @@ local lightTheme = strict("LightTheme", {
 	Header = {
 		LogoColor = BRAND_COLOR,
 		VersionColor = hexColor(0x727272),
+	},
+	Notification = {
+		InfoColor = hexColor(0x00000),
+		CloseColor = BRAND_COLOR,
 	},
 	ErrorColor = hexColor(0x000000),
 	ScrollBarColor = hexColor(0x000000),
@@ -145,6 +161,17 @@ local darkTheme = strict("DarkTheme", {
 			BorderColor = hexColor(0x5A5A5A),
 		},
 	},
+	Dropdown = {
+		TextColor = hexColor(0xFFFFFF),
+		BorderColor = hexColor(0x5A5A5A),
+		BackgroundColor = hexColor(0x2B2B2B),
+		Open = {
+			IconColor = BRAND_COLOR,
+		},
+		Closed = {
+			IconColor = hexColor(0x484848),
+		},
+	},
 	AddressEntry = {
 		TextColor = hexColor(0xFFFFFF),
 		PlaceholderColor = hexColor(0x8B8B8B)
@@ -176,6 +203,10 @@ local darkTheme = strict("DarkTheme", {
 	Header = {
 		LogoColor = BRAND_COLOR,
 		VersionColor = hexColor(0xD3D3D3)
+	},
+	Notification = {
+		InfoColor = hexColor(0xFFFFFF),
+		CloseColor = hexColor(0xFFFFFF),
 	},
 	ErrorColor = hexColor(0xFFFFFF),
 	ScrollBarColor = hexColor(0xFFFFFF),

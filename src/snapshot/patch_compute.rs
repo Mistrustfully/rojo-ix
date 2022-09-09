@@ -1,7 +1,10 @@
 //! Defines the algorithm for computing a roughly-minimal patch set given an
 //! existing instance tree and an instance snapshot.
 
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    mem::take,
+};
 
 use rbx_dom_weak::types::{Ref, Variant};
 
@@ -10,16 +13,24 @@ use super::{
     InstanceSnapshot, InstanceWithMeta, RojoTree,
 };
 
-pub fn compute_patch_set(snapshot: &InstanceSnapshot, tree: &RojoTree, id: Ref) -> PatchSet {
+#[profiling::function]
+pub fn compute_patch_set(snapshot: Option<InstanceSnapshot>, tree: &RojoTree, id: Ref) -> PatchSet {
     let mut patch_set = PatchSet::new();
-    let mut context = ComputePatchContext::default();
 
-    compute_patch_set_internal(&mut context, snapshot, tree, id, &mut patch_set);
+    if let Some(snapshot) = snapshot {
+        let mut context = ComputePatchContext::default();
 
-    // Rewrite Ref properties to refer to instance IDs instead of snapshot IDs
-    // for all of the IDs that we know about so far.
-    rewrite_refs_in_updates(&context, &mut patch_set.updated_instances);
-    rewrite_refs_in_additions(&context, &mut patch_set.added_instances);
+        compute_patch_set_internal(&mut context, snapshot, tree, id, &mut patch_set);
+
+        // Rewrite Ref properties to refer to instance IDs instead of snapshot IDs
+        // for all of the IDs that we know about so far.
+        rewrite_refs_in_updates(&context, &mut patch_set.updated_instances);
+        rewrite_refs_in_additions(&context, &mut patch_set.added_instances);
+    } else {
+        if id != tree.get_root_id() {
+            patch_set.removed_instances.push(id);
+        }
+    }
 
     patch_set
 }
@@ -63,7 +74,7 @@ fn rewrite_refs_in_snapshot(context: &ComputePatchContext, snapshot: &mut Instan
 
 fn compute_patch_set_internal(
     context: &mut ComputePatchContext,
-    snapshot: &InstanceSnapshot,
+    mut snapshot: InstanceSnapshot,
     tree: &RojoTree,
     id: Ref,
     patch_set: &mut PatchSet,
@@ -76,12 +87,12 @@ fn compute_patch_set_internal(
         .get_instance(id)
         .expect("Instance did not exist in tree");
 
-    compute_property_patches(snapshot, &instance, patch_set);
-    compute_children_patches(context, snapshot, tree, id, patch_set);
+    compute_property_patches(&mut snapshot, &instance, patch_set);
+    compute_children_patches(context, &mut snapshot, tree, id, patch_set);
 }
 
 fn compute_property_patches(
-    snapshot: &InstanceSnapshot,
+    snapshot: &mut InstanceSnapshot,
     instance: &InstanceWithMeta,
     patch_set: &mut PatchSet,
 ) {
@@ -91,32 +102,32 @@ fn compute_property_patches(
     let changed_name = if snapshot.name == instance.name() {
         None
     } else {
-        Some(snapshot.name.clone().into_owned())
+        Some(take(&mut snapshot.name).into_owned())
     };
 
     let changed_class_name = if snapshot.class_name == instance.class_name() {
         None
     } else {
-        Some(snapshot.class_name.clone().into_owned())
+        Some(take(&mut snapshot.class_name).into_owned())
     };
 
     let changed_metadata = if &snapshot.metadata == instance.metadata() {
         None
     } else {
-        Some(snapshot.metadata.clone())
+        Some(take(&mut snapshot.metadata))
     };
 
-    for (name, snapshot_value) in &snapshot.properties {
-        visited_properties.insert(name.as_str());
+    for (name, snapshot_value) in take(&mut snapshot.properties) {
+        visited_properties.insert(name.clone());
 
-        match instance.properties().get(name) {
+        match instance.properties().get(&name) {
             Some(instance_value) => {
-                if snapshot_value != instance_value {
-                    changed_properties.insert(name.clone(), Some(snapshot_value.clone()));
+                if &snapshot_value != instance_value {
+                    changed_properties.insert(name, Some(snapshot_value));
                 }
             }
             None => {
-                changed_properties.insert(name.clone(), Some(snapshot_value.clone()));
+                changed_properties.insert(name, Some(snapshot_value));
             }
         }
     }
@@ -148,7 +159,7 @@ fn compute_property_patches(
 
 fn compute_children_patches(
     context: &mut ComputePatchContext,
-    snapshot: &InstanceSnapshot,
+    snapshot: &mut InstanceSnapshot,
     tree: &RojoTree,
     id: Ref,
     patch_set: &mut PatchSet,
@@ -161,7 +172,7 @@ fn compute_children_patches(
 
     let mut paired_instances = vec![false; instance_children.len()];
 
-    for snapshot_child in snapshot.children.iter() {
+    for snapshot_child in take(&mut snapshot.children) {
         let matching_instance =
             instance_children
                 .iter()
@@ -198,7 +209,7 @@ fn compute_children_patches(
             None => {
                 patch_set.added_instances.push(PatchAdd {
                     parent_id: id,
-                    instance: snapshot_child.clone(),
+                    instance: snapshot_child,
                 });
             }
         }
@@ -246,7 +257,7 @@ mod test {
             children: Vec::new(),
         };
 
-        let patch_set = compute_patch_set(&snapshot, &tree, root_id);
+        let patch_set = compute_patch_set(Some(snapshot), &tree, root_id);
 
         let expected_patch_set = PatchSet {
             updated_instances: vec![PatchUpdate {
@@ -296,7 +307,7 @@ mod test {
             class_name: Cow::Borrowed("foo"),
         };
 
-        let patch_set = compute_patch_set(&snapshot, &tree, root_id);
+        let patch_set = compute_patch_set(Some(snapshot), &tree, root_id);
 
         let expected_patch_set = PatchSet {
             added_instances: vec![PatchAdd {
